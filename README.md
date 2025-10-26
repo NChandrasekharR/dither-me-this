@@ -2,8 +2,8 @@
 
 A Windows 95-themed image dithering tool that brings retro aesthetics to your modern images. Transform photos with classic dithering algorithms and vintage color palettes - all running in your browser!
 
-![Screenshot Placeholder](./screenshot.png)
-*Screenshot coming soon*
+<img width="1792" height="1029" alt="Screenshot 2025-10-26 at 10 12 55 PM" src="https://github.com/user-attachments/assets/c2b88356-54d8-49ce-9dac-22de22a1c186" />
+
 
 ## Features
 

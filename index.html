@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Dithering Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+            background: #008080;
+            background-image: 
+                linear-gradient(45deg, #008080 25%, transparent 25%),
+                linear-gradient(-45deg, #008080 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #008080 75%),
+                linear-gradient(-45deg, transparent 75%, #008080 75%);
+            background-size: 4px 4px;
+            background-position: 0 0, 0 2px, 2px -2px, -2px 0px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #c0c0c0;
+            padding: 3px;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            box-shadow: 1px 1px 0 #808080;
+        }
+
+        .title-bar {
+            background: linear-gradient(90deg, #000080, #1084d0);
+            color: white;
+            padding: 3px 5px;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .title-bar-text {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .title-bar-controls {
+            display: flex;
+            gap: 2px;
+        }
+
+        .title-bar-button {
+            width: 16px;
+            height: 14px;
+            background: #c0c0c0;
+            border-top: 1px solid #ffffff;
+            border-left: 1px solid #ffffff;
+            border-right: 1px solid #000000;
+            border-bottom: 1px solid #000000;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .window-body {
+            background: #c0c0c0;
+            padding: 10px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #000080;
+        }
+
+        .subtitle {
+            color: #000000;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        .settings-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #c0c0c0;
+            border-top: 2px solid #808080;
+            border-left: 2px solid #808080;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .setting-group label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .algorithm-info {
+            margin-top: 8px;
+            padding: 8px;
+            background: #ffffff;
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-right: 1px solid #ffffff;
+            border-bottom: 1px solid #ffffff;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .algorithm-info strong {
+            color: #000080;
+        }
+
+        select, input[type="number"] {
+            padding: 3px;
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-right: 1px solid #ffffff;
+            border-bottom: 1px solid #ffffff;
+            background: #ffffff;
+            font-family: 'MS Sans Serif', sans-serif;
+            font-size: 11px;
+            color: #000000;
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: 1px dotted #000000;
+            outline-offset: -2px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 20px;
+            -webkit-appearance: none;
+            background: #c0c0c0;
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-right: 1px solid #ffffff;
+            border-bottom: 1px solid #ffffff;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 11px;
+            height: 20px;
+            background: #c0c0c0;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 11px;
+            height: 20px;
+            background: #c0c0c0;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            cursor: pointer;
+        }
+
+        .palette-colors {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+            cursor: pointer;
+            position: relative;
+            background: #c0c0c0;
+        }
+
+        .color-swatch input[type="color"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .color-swatch-display {
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .add-color-btn {
+            width: 30px;
+            height: 30px;
+            background: #c0c0c0;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #000000;
+            font-family: 'MS Sans Serif', sans-serif;
+        }
+
+        .add-color-btn:active {
+            border-top: 2px solid #000000;
+            border-left: 2px solid #000000;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            padding-top: 2px;
+            padding-left: 2px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input[type="file"] {
+            padding: 3px;
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-right: 1px solid #ffffff;
+            border-bottom: 1px solid #ffffff;
+            background: #ffffff;
+            font-family: 'MS Sans Serif', sans-serif;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        button {
+            padding: 4px 12px;
+            background: #c0c0c0;
+            color: #000000;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: normal;
+            font-family: 'MS Sans Serif', sans-serif;
+            min-width: 75px;
+        }
+
+        button:active:not(:disabled) {
+            border-top: 2px solid #000000;
+            border-left: 2px solid #000000;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            padding-top: 6px;
+            padding-left: 14px;
+            padding-bottom: 2px;
+            padding-right: 10px;
+        }
+
+        button:focus {
+            outline: 1px dotted #000000;
+            outline-offset: -4px;
+        }
+
+        button:disabled {
+            color: #808080;
+            text-shadow: 1px 1px 0 #ffffff;
+            cursor: default;
+        }
+
+        button.secondary {
+            background: #c0c0c0;
+        }
+
+        .canvas-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .canvas-wrapper {
+            display: flex;
+            flex-direction: column;
+            background: #c0c0c0;
+            padding: 3px;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+            position: relative;
+        }
+
+        .canvas-wrapper h3 {
+            margin-bottom: 5px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #000000;
+            background: #c0c0c0;
+            padding: 2px 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .canvas-wrapper h3::before {
+            content: '📄';
+            font-size: 14px;
+        }
+
+        .canvas-placeholder {
+            width: 100%;
+            min-height: 300px;
+            background: #ffffff;
+            border-top: 2px solid #808080;
+            border-left: 2px solid #808080;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            color: #808080;
+            font-size: 11px;
+        }
+
+        .canvas-placeholder-icon {
+            width: 64px;
+            height: 64px;
+            background: 
+                linear-gradient(45deg, #c0c0c0 25%, transparent 25%),
+                linear-gradient(-45deg, #c0c0c0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #c0c0c0 75%),
+                linear-gradient(-45deg, transparent 75%, #c0c0c0 75%);
+            background-size: 8px 8px;
+            background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+            border: 2px solid #808080;
+            position: relative;
+        }
+
+        .canvas-placeholder-icon::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border: 2px solid #808080;
+        }
+
+        .canvas-placeholder-icon::after {
+            content: '🖼️';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+        }
+
+        canvas {
+            width: 100%;
+            border-top: 2px solid #808080;
+            border-left: 2px solid #808080;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            display: block;
+            background: #ffffff;
+        }
+
+        .batch-results {
+            margin-top: 15px;
+            padding: 10px;
+            background: #c0c0c0;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+        }
+
+        .batch-results h3 {
+            font-size: 11px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 10px;
+        }
+
+        .batch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .batch-item {
+            background: #c0c0c0;
+            padding: 3px;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+        }
+
+        .batch-item img {
+            width: 100%;
+            margin-bottom: 3px;
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-right: 1px solid #ffffff;
+            border-bottom: 1px solid #ffffff;
+        }
+
+        .batch-item-name {
+            font-size: 11px;
+            color: #000000;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #c0c0c0;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+            font-size: 11px;
+            color: #000000;
+        }
+
+        .info strong {
+            font-weight: bold;
+        }
+
+        .processing {
+            display: inline-block;
+            color: #000000;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+
+        small {
+            color: #000000;
+            font-size: 10px;
+        }
+
+        #scaleValue {
+            font-weight: bold;
+        }
+
+        #customPaletteSection {
+            background: #c0c0c0;
+            padding: 10px;
+            border-top: 2px solid #808080;
+            border-left: 2px solid #808080;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            margin-bottom: 15px;
+        }
+
+        #customPaletteSection label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .status-bar {
+            background: #c0c0c0;
+            border-top: 1px solid #ffffff;
+            padding: 2px 5px;
+            font-size: 11px;
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .status-bar-field {
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-right: 1px solid #ffffff;
+            border-bottom: 1px solid #ffffff;
+            padding: 2px 5px;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title-bar">
+            <div class="title-bar-text">
+                <span>🖼️</span>
+                <span>Dither Me This</span>
+            </div>
+            <div class="title-bar-controls">
+                <div class="title-bar-button">_</div>
+                <div class="title-bar-button">□</div>
+                <div class="title-bar-button">×</div>
+            </div>
+        </div>
+        
+        <div class="window-body">
+            <h1>Dither Me This</h1>
+            <p class="subtitle">Transform your images with retro dithering effects</p>
+
+        <div class="settings-panel">
+            <div class="setting-group">
+                <label>Algorithm</label>
+                <select id="algorithm">
+                    <option value="floyd-steinberg">Floyd-Steinberg (Natural)</option>
+                    <option value="atkinson">Atkinson (Classic Mac)</option>
+                    <option value="jarvis">Jarvis-Judice-Ninke (Smooth)</option>
+                    <option value="stucki">Stucki (Detail)</option>
+                    <option value="bayer-8">Bayer 8x8 (Medium Pattern)</option>
+                    <option value="bayer-16">Bayer 16x16 (Large Pattern)</option>
+                    <option value="bayer-32">Bayer 32x32 (Huge Pattern)</option>
+                </select>
+                
+                <div class="algorithm-info" id="algorithmInfo">
+                    <strong>Floyd-Steinberg:</strong> Most popular algorithm. Creates natural, organic-looking patterns. Best for photos and general use.
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>Preset Palette</label>
+                <select id="presetPalette">
+                    <option value="custom">Custom Colors</option>
+                    <option value="bw">Black & White</option>
+                    <option value="gameboy">Game Boy (4 greens)</option>
+                    <option value="cga">CGA (4 colors)</option>
+                    <option value="commodore64">Commodore 64</option>
+                    <option value="apple2">Apple II</option>
+                    <option value="websafe">Web Safe (216)</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label>Color Count (Custom)</label>
+                <input type="number" id="colorCount" min="2" max="16" value="2">
+            </div>
+
+            <div class="setting-group">
+                <label>Pattern Size: <span id="scaleValue">100%</span></label>
+                <input type="range" id="scaleSlider" min="10" max="100" value="100" step="5">
+                <small style="color: #999; font-size: 11px;">Lower = chunkier, more visible dots</small>
+            </div>
+        </div>
+
+        <div class="setting-group" id="customPaletteSection">
+            <label>Custom Palette Colors</label>
+            <div class="palette-colors" id="paletteColors"></div>
+        </div>
+
+        <div class="controls">
+            <input type="file" id="upload" accept="image/*" multiple>
+            <button id="processBtn" disabled>Process</button>
+            <button id="resetBtn" class="secondary" disabled>Reset</button>
+            <button id="downloadBtn" class="secondary" disabled>Download</button>
+            <button id="downloadAllBtn" class="secondary" disabled>Download All</button>
+            <span class="processing" id="processingStatus"></span>
+        </div>
+
+        <div class="canvas-container">
+            <div class="canvas-wrapper">
+                <h3>Original Image</h3>
+                <div class="canvas-placeholder" id="originalPlaceholder">
+                    <div class="canvas-placeholder-icon"></div>
+                    <div>No image loaded</div>
+                </div>
+                <canvas id="originalCanvas" style="display: none;"></canvas>
+            </div>
+            <div class="canvas-wrapper">
+                <h3>Dithered Preview</h3>
+                <div class="canvas-placeholder" id="ditheredPlaceholder">
+                    <div class="canvas-placeholder-icon"></div>
+                    <div>Awaiting processing</div>
+                </div>
+                <canvas id="ditheredCanvas" style="display: none;"></canvas>
+            </div>
+        </div>
+
+        <div class="batch-results" id="batchResults" style="display: none;">
+            <h3>Batch Processing Results</h3>
+            <div class="batch-grid" id="batchGrid"></div>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-bar-field">Ready</div>
+        </div>
+        
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        console.log('Script loading...');
+        
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM ready, initializing...');
+            
+        const uploadInput = document.getElementById('upload');
+        const processBtn = document.getElementById('processBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const algorithmSelect = document.getElementById('algorithm');
+        const presetPaletteSelect = document.getElementById('presetPalette');
+        const colorCountInput = document.getElementById('colorCount');
+        const scaleSlider = document.getElementById('scaleSlider');
+        const scaleValue = document.getElementById('scaleValue');
+        const paletteColorsDiv = document.getElementById('paletteColors');
+        const customPaletteSection = document.getElementById('customPaletteSection');
+        const originalCanvas = document.getElementById('originalCanvas');
+        const ditheredCanvas = document.getElementById('ditheredCanvas');
+        const batchResults = document.getElementById('batchResults');
+        const batchGrid = document.getElementById('batchGrid');
+        const processingStatus = document.getElementById('processingStatus');
+        
+        console.log('Elements found:', {
+            uploadInput: !!uploadInput,
+            processBtn: !!processBtn,
+            originalCanvas: !!originalCanvas
+        });
+        
+        const originalCtx = originalCanvas.getContext('2d');
+        const ditheredCtx = ditheredCanvas.getContext('2d');
+
+        let uploadedImages = [];
+        let originalImageDataCache = []; // Store original pixel data
+        let processedImages = [];
+        let currentPalette = ['#000000', '#ffffff'];
+
+        // Preset palettes
+        const presetPalettes = {
+            'bw': ['#000000', '#ffffff'],
+            'gameboy': ['#0f380f', '#306230', '#8bac0f', '#9bbc0f'],
+            'cga': ['#000000', '#00aaaa', '#aa00aa', '#aaaaaa'],
+            'commodore64': ['#000000', '#ffffff', '#883932', '#67b6bd', '#8b3f96', '#55a049', '#40318d', '#bfce72'],
+            'apple2': ['#000000', '#d03e37', '#2c5c2d', '#ffffff', '#ffffff', '#d03e37'],
+            'websafe': generateWebSafePalette()
+        };
+
+        function generateWebSafePalette() {
+            const palette = [];
+            const values = [0x00, 0x33, 0x66, 0x99, 0xcc, 0xff];
+            for (let r of values) {
+                for (let g of values) {
+                    for (let b of values) {
+                        palette.push(`#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`);
+                    }
+                }
+            }
+            return palette;
+        }
+
+        // Initialize palette UI
+        function initPalette() {
+            paletteColorsDiv.innerHTML = '';
+            currentPalette.forEach((color, index) => {
+                addColorSwatch(color, index);
+            });
+            if (currentPalette.length < 16) {
+                addAddButton();
+            }
+        }
+
+        function addColorSwatch(color, index) {
+            const swatch = document.createElement('div');
+            swatch.className = 'color-swatch';
+            swatch.innerHTML = `
+                <input type="color" value="${color}" data-index="${index}">
+                <div class="color-swatch-display" style="background: ${color}"></div>
+            `;
+            swatch.querySelector('input').addEventListener('change', (e) => {
+                currentPalette[index] = e.target.value;
+                swatch.querySelector('.color-swatch-display').style.background = e.target.value;
+                if (uploadedImages.length > 0) {
+                    processImages();
+                }
+            });
+            paletteColorsDiv.appendChild(swatch);
+        }
+
+        function addAddButton() {
+            const addBtn = document.createElement('button');
+            addBtn.className = 'add-color-btn';
+            addBtn.textContent = '+';
+            addBtn.onclick = () => {
+                if (currentPalette.length < 16) {
+                    currentPalette.push('#808080');
+                    colorCountInput.value = currentPalette.length;
+                    initPalette();
+                }
+            };
+            paletteColorsDiv.appendChild(addBtn);
+        }
+
+        // Preset palette selection
+        presetPaletteSelect.addEventListener('change', (e) => {
+            const preset = e.target.value;
+            if (preset === 'custom') {
+                customPaletteSection.style.display = 'block';
+            } else {
+                customPaletteSection.style.display = 'none';
+                currentPalette = [...presetPalettes[preset]];
+                if (uploadedImages.length > 0) {
+                    processImages();
+                }
+            }
+        });
+
+        colorCountInput.addEventListener('change', (e) => {
+            const count = parseInt(e.target.value);
+            while (currentPalette.length < count) {
+                currentPalette.push('#808080');
+            }
+            while (currentPalette.length > count) {
+                currentPalette.pop();
+            }
+            initPalette();
+            if (uploadedImages.length > 0) {
+                processImages();
+            }
+        });
+
+        algorithmSelect.addEventListener('change', () => {
+            updateAlgorithmInfo();
+            if (uploadedImages.length > 0) {
+                processImages();
+            }
+        });
+
+        function updateAlgorithmInfo() {
+            const algo = algorithmSelect.value;
+            const infoBox = document.getElementById('algorithmInfo');
+            
+            const descriptions = {
+                'floyd-steinberg': '<strong>Floyd-Steinberg:</strong> Most popular algorithm. Creates natural, organic-looking patterns with good detail preservation. <em>Best for:</em> Photos, portraits, general-purpose dithering.',
+                
+                'atkinson': '<strong>Atkinson:</strong> Created for the original Macintosh. Uses only 75% of the error, creating high contrast with bright whites and deep blacks. <em>Best for:</em> Bold graphics, logos, that classic Mac aesthetic.',
+                
+                'jarvis': '<strong>Jarvis-Judice-Ninke:</strong> Distributes error to more neighboring pixels, creating smoother gradients with fewer artifacts. <em>Best for:</em> Smooth gradients, images with subtle tonal shifts.',
+                
+                'stucki': '<strong>Stucki:</strong> Similar to Jarvis but with different weights. Preserves fine details well. <em>Best for:</em> Images with lots of texture and detail.',
+                
+                'bayer-8': '<strong>Bayer 8x8:</strong> Creates regular, repeating crosshatch patterns. Fast and mechanical-looking. <em>Best for:</em> Backgrounds, textures, newspaper print effect.',
+                
+                'bayer-16': '<strong>Bayer 16x16:</strong> Larger crosshatch pattern, more visible structure. <em>Best for:</em> Stylized graphics, bold patterns, retro video game look.',
+                
+                'bayer-32': '<strong>Bayer 32x32:</strong> Huge, dramatic crosshatch pattern. Very stylized. <em>Best for:</em> Artistic effects, extremely retro aesthetic, large prints.'
+            };
+            
+            infoBox.innerHTML = descriptions[algo];
+        }
+
+        scaleSlider.addEventListener('input', (e) => {
+            scaleValue.textContent = e.target.value + '%';
+        });
+
+        scaleSlider.addEventListener('change', () => {
+            if (uploadedImages.length > 0) {
+                processImages();
+            }
+        });
+
+        // File upload
+        uploadInput.addEventListener('change', function(e) {
+            console.log('File input changed', e.target.files);
+            const files = Array.from(e.target.files);
+            if (files.length === 0) {
+                console.log('No files selected');
+                return;
+            }
+
+            console.log('Files selected:', files.length);
+            uploadedImages = [];
+            originalImageDataCache = [];
+            processedImages = [];
+            batchGrid.innerHTML = '';
+            batchResults.style.display = 'none';
+            downloadBtn.disabled = true;
+            downloadAllBtn.disabled = true;
+            processingStatus.textContent = 'Loading images...';
+
+            let loadedCount = 0;
+            files.forEach((file, index) => {
+                console.log(`Processing file ${index}:`, file.name);
+                const reader = new FileReader();
+                
+                reader.onerror = function(error) {
+                    console.error('FileReader error:', error);
+                    processingStatus.textContent = 'Error loading file';
+                };
+                
+                reader.onload = function(event) {
+                    console.log(`File ${index} loaded, creating image`);
+                    const img = new Image();
+                    
+                    img.onerror = function(error) {
+                        console.error('Image load error:', error);
+                        processingStatus.textContent = 'Error loading image';
+                    };
+                    
+                    img.onload = function() {
+                        console.log(`Image ${index} dimensions:`, img.width, 'x', img.height);
+                        uploadedImages.push({ img, name: file.name });
+                        
+                        // Store original image data
+                        const tempCanvas = document.createElement('canvas');
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCanvas.width = img.width;
+                        tempCanvas.height = img.height;
+                        tempCtx.drawImage(img, 0, 0);
+                        const originalData = tempCtx.getImageData(0, 0, img.width, img.height);
+                        originalImageDataCache.push(originalData);
+                        
+                        loadedCount++;
+                        console.log(`Loaded ${loadedCount} of ${files.length} files`);
+                        
+                        if (loadedCount === files.length) {
+                            processingStatus.textContent = '';
+                            processBtn.disabled = false;
+                            resetBtn.disabled = false;
+                            
+                            // Show first image in preview
+                            if (uploadedImages.length > 0) {
+                                console.log('Displaying first image');
+                                displayImage(uploadedImages[0].img);
+                            }
+                        }
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        function displayImage(img) {
+            originalCanvas.width = img.width;
+            originalCanvas.height = img.height;
+            ditheredCanvas.width = img.width;
+            ditheredCanvas.height = img.height;
+            originalCtx.drawImage(img, 0, 0);
+            
+            // Show canvas, hide placeholder
+            document.getElementById('originalPlaceholder').style.display = 'none';
+            originalCanvas.style.display = 'block';
+        }
+
+        // Color distance calculation
+        function colorDistance(r1, g1, b1, r2, g2, b2) {
+            return Math.sqrt(
+                Math.pow(r1 - r2, 2) +
+                Math.pow(g1 - g2, 2) +
+                Math.pow(b1 - b2, 2)
+            );
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function findNearestColor(r, g, b, palette) {
+            let minDistance = Infinity;
+            let nearestColor = palette[0];
+            
+            palette.forEach(hex => {
+                const color = hexToRgb(hex);
+                const distance = colorDistance(r, g, b, color.r, color.g, color.b);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestColor = color;
+                }
+            });
+            
+            return nearestColor;
+        }
+
+        // Dithering algorithms
+        function floydSteinbergDither(imageData, palette) {
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    const oldR = data[idx];
+                    const oldG = data[idx + 1];
+                    const oldB = data[idx + 2];
+
+                    const newColor = findNearestColor(oldR, oldG, oldB, palette);
+                    
+                    data[idx] = newColor.r;
+                    data[idx + 1] = newColor.g;
+                    data[idx + 2] = newColor.b;
+
+                    const errR = oldR - newColor.r;
+                    const errG = oldG - newColor.g;
+                    const errB = oldB - newColor.b;
+
+                    distributeError(data, width, height, x, y, errR, errG, errB, [
+                        [1, 0, 7/16],
+                        [-1, 1, 3/16],
+                        [0, 1, 5/16],
+                        [1, 1, 1/16]
+                    ]);
+                }
+            }
+            return imageData;
+        }
+
+        function atkinsonDither(imageData, palette) {
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    const oldR = data[idx];
+                    const oldG = data[idx + 1];
+                    const oldB = data[idx + 2];
+
+                    const newColor = findNearestColor(oldR, oldG, oldB, palette);
+                    
+                    data[idx] = newColor.r;
+                    data[idx + 1] = newColor.g;
+                    data[idx + 2] = newColor.b;
+
+                    const errR = oldR - newColor.r;
+                    const errG = oldG - newColor.g;
+                    const errB = oldB - newColor.b;
+
+                    distributeError(data, width, height, x, y, errR, errG, errB, [
+                        [1, 0, 1/8],
+                        [2, 0, 1/8],
+                        [-1, 1, 1/8],
+                        [0, 1, 1/8],
+                        [1, 1, 1/8],
+                        [0, 2, 1/8]
+                    ]);
+                }
+            }
+            return imageData;
+        }
+
+        function jarvisDither(imageData, palette) {
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    const oldR = data[idx];
+                    const oldG = data[idx + 1];
+                    const oldB = data[idx + 2];
+
+                    const newColor = findNearestColor(oldR, oldG, oldB, palette);
+                    
+                    data[idx] = newColor.r;
+                    data[idx + 1] = newColor.g;
+                    data[idx + 2] = newColor.b;
+
+                    const errR = oldR - newColor.r;
+                    const errG = oldG - newColor.g;
+                    const errB = oldB - newColor.b;
+
+                    distributeError(data, width, height, x, y, errR, errG, errB, [
+                        [1, 0, 7/48], [2, 0, 5/48],
+                        [-2, 1, 3/48], [-1, 1, 5/48], [0, 1, 7/48], [1, 1, 5/48], [2, 1, 3/48],
+                        [-2, 2, 1/48], [-1, 2, 3/48], [0, 2, 5/48], [1, 2, 3/48], [2, 2, 1/48]
+                    ]);
+                }
+            }
+            return imageData;
+        }
+
+        function stuckiDither(imageData, palette) {
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    const oldR = data[idx];
+                    const oldG = data[idx + 1];
+                    const oldB = data[idx + 2];
+
+                    const newColor = findNearestColor(oldR, oldG, oldB, palette);
+                    
+                    data[idx] = newColor.r;
+                    data[idx + 1] = newColor.g;
+                    data[idx + 2] = newColor.b;
+
+                    const errR = oldR - newColor.r;
+                    const errG = oldG - newColor.g;
+                    const errB = oldB - newColor.b;
+
+                    distributeError(data, width, height, x, y, errR, errG, errB, [
+                        [1, 0, 8/42], [2, 0, 4/42],
+                        [-2, 1, 2/42], [-1, 1, 4/42], [0, 1, 8/42], [1, 1, 4/42], [2, 1, 2/42],
+                        [-2, 2, 1/42], [-1, 2, 2/42], [0, 2, 4/42], [1, 2, 2/42], [2, 2, 1/42]
+                    ]);
+                }
+            }
+            return imageData;
+        }
+
+        function bayerDither(imageData, palette, matrixSize = 8) {
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+
+            // 8x8 Bayer matrix
+            const bayer8 = [
+                [ 0, 32,  8, 40,  2, 34, 10, 42],
+                [48, 16, 56, 24, 50, 18, 58, 26],
+                [12, 44,  4, 36, 14, 46,  6, 38],
+                [60, 28, 52, 20, 62, 30, 54, 22],
+                [ 3, 35, 11, 43,  1, 33,  9, 41],
+                [51, 19, 59, 27, 49, 17, 57, 25],
+                [15, 47,  7, 39, 13, 45,  5, 37],
+                [63, 31, 55, 23, 61, 29, 53, 21]
+            ];
+
+            // 16x16 Bayer matrix (generated from 8x8)
+            const bayer16 = [];
+            for (let i = 0; i < 16; i++) {
+                bayer16[i] = [];
+                for (let j = 0; j < 16; j++) {
+                    const base = bayer8[i % 8][j % 8];
+                    const offset = Math.floor(i / 8) * 2 + Math.floor(j / 8);
+                    bayer16[i][j] = base * 4 + offset * 64;
+                }
+            }
+
+            // 32x32 Bayer matrix (generated from 16x16)
+            const bayer32 = [];
+            for (let i = 0; i < 32; i++) {
+                bayer32[i] = [];
+                for (let j = 0; j < 32; j++) {
+                    const base = bayer16[i % 16][j % 16];
+                    const offset = Math.floor(i / 16) * 2 + Math.floor(j / 16);
+                    bayer32[i][j] = base * 4 + offset * 256;
+                }
+            }
+
+            const matrices = {
+                8: { matrix: bayer8, max: 64 },
+                16: { matrix: bayer16, max: 256 },
+                32: { matrix: bayer32, max: 1024 }
+            };
+
+            const { matrix, max } = matrices[matrixSize];
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    const threshold = (matrix[y % matrixSize][x % matrixSize] / max) * 255;
+                    
+                    let r = data[idx] + threshold - 128;
+                    let g = data[idx + 1] + threshold - 128;
+                    let b = data[idx + 2] + threshold - 128;
+
+                    r = Math.max(0, Math.min(255, r));
+                    g = Math.max(0, Math.min(255, g));
+                    b = Math.max(0, Math.min(255, b));
+
+                    const newColor = findNearestColor(r, g, b, palette);
+                    
+                    data[idx] = newColor.r;
+                    data[idx + 1] = newColor.g;
+                    data[idx + 2] = newColor.b;
+                }
+            }
+            return imageData;
+        }
+
+        function distributeError(data, width, height, x, y, errR, errG, errB, pattern) {
+            pattern.forEach(([dx, dy, factor]) => {
+                const nx = x + dx;
+                const ny = y + dy;
+                
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                    const nidx = (ny * width + nx) * 4;
+                    data[nidx] += errR * factor;
+                    data[nidx + 1] += errG * factor;
+                    data[nidx + 2] += errB * factor;
+                }
+            });
+        }
+
+        function applyDithering(imageData, algorithm, palette) {
+            switch(algorithm) {
+                case 'floyd-steinberg':
+                    return floydSteinbergDither(imageData, palette);
+                case 'atkinson':
+                    return atkinsonDither(imageData, palette);
+                case 'jarvis':
+                    return jarvisDither(imageData, palette);
+                case 'stucki':
+                    return stuckiDither(imageData, palette);
+                case 'bayer-8':
+                    return bayerDither(imageData, palette, 8);
+                case 'bayer-16':
+                    return bayerDither(imageData, palette, 16);
+                case 'bayer-32':
+                    return bayerDither(imageData, palette, 32);
+                default:
+                    return floydSteinbergDither(imageData, palette);
+            }
+        }
+
+        // Process images
+        processBtn.addEventListener('click', processImages);
+
+        function processImages() {
+            if (uploadedImages.length === 0 || originalImageDataCache.length === 0) return;
+
+            processedImages = [];
+            batchGrid.innerHTML = '';
+            
+            const algorithm = algorithmSelect.value;
+            const palette = presetPaletteSelect.value === 'custom' ? currentPalette : presetPalettes[presetPaletteSelect.value];
+            const scale = parseInt(scaleSlider.value) / 100;
+
+            processingStatus.textContent = `Processing ${uploadedImages.length} image(s)...`;
+
+            uploadedImages.forEach((imgData, index) => {
+                setTimeout(() => {
+                    const originalData = originalImageDataCache[index];
+                    const originalWidth = originalData.width;
+                    const originalHeight = originalData.height;
+
+                    // Calculate scaled dimensions
+                    const scaledWidth = Math.max(1, Math.round(originalWidth * scale));
+                    const scaledHeight = Math.max(1, Math.round(originalHeight * scale));
+
+                    // Step 1: Draw original to a temp canvas
+                    const originalCanvas = document.createElement('canvas');
+                    const originalCtx = originalCanvas.getContext('2d');
+                    originalCanvas.width = originalWidth;
+                    originalCanvas.height = originalHeight;
+                    originalCtx.putImageData(originalData, 0, 0);
+
+                    // Step 2: Create scaled-down canvas
+                    const scaledCanvas = document.createElement('canvas');
+                    const scaledCtx = scaledCanvas.getContext('2d');
+                    scaledCanvas.width = scaledWidth;
+                    scaledCanvas.height = scaledHeight;
+                    
+                    // Draw the original image scaled down
+                    scaledCtx.drawImage(originalCanvas, 0, 0, originalWidth, originalHeight, 0, 0, scaledWidth, scaledHeight);
+
+                    // Get the downscaled image data
+                    const scaledImageData = scaledCtx.getImageData(0, 0, scaledWidth, scaledHeight);
+
+                    // Step 3: Apply dithering to the scaled version
+                    const dithered = applyDithering(scaledImageData, algorithm, palette);
+                    scaledCtx.putImageData(dithered, 0, 0);
+
+                    // Step 4: Create final canvas at original size and scale up
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = originalWidth;
+                    canvas.height = originalHeight;
+
+                    // Disable image smoothing for pixelated upscale
+                    ctx.imageSmoothingEnabled = false;
+                    ctx.mozImageSmoothingEnabled = false;
+                    ctx.webkitImageSmoothingEnabled = false;
+                    ctx.msImageSmoothingEnabled = false;
+
+                    // Scale the dithered image back up to original size
+                    ctx.drawImage(scaledCanvas, 0, 0, scaledWidth, scaledHeight, 0, 0, originalWidth, originalHeight);
+
+                    processedImages.push({
+                        canvas: canvas,
+                        name: imgData.name
+                    });
+
+                    // Show first result in preview
+                    if (index === 0) {
+                        ditheredCtx.clearRect(0, 0, ditheredCanvas.width, ditheredCanvas.height);
+                        ditheredCtx.drawImage(canvas, 0, 0);
+                        
+                        // Show dithered canvas, hide placeholder
+                        document.getElementById('ditheredPlaceholder').style.display = 'none';
+                        ditheredCanvas.style.display = 'block';
+                    }
+
+                    // Add to batch grid if multiple images
+                    if (uploadedImages.length > 1) {
+                        const item = document.createElement('div');
+                        item.className = 'batch-item';
+                        const resultImg = document.createElement('img');
+                        resultImg.src = canvas.toDataURL();
+                        const name = document.createElement('div');
+                        name.className = 'batch-item-name';
+                        name.textContent = imgData.name;
+                        item.appendChild(resultImg);
+                        item.appendChild(name);
+                        batchGrid.appendChild(item);
+                    }
+
+                    if (index === uploadedImages.length - 1) {
+                        processingStatus.textContent = '';
+                        downloadBtn.disabled = false;
+                        if (uploadedImages.length > 1) {
+                            batchResults.style.display = 'block';
+                            downloadAllBtn.disabled = false;
+                        }
+                    }
+                }, index * 50); // Stagger processing to avoid blocking UI
+            });
+        }
+
+        // Download single result
+        downloadBtn.addEventListener('click', function() {
+            if (processedImages.length === 0) return;
+            
+            const link = document.createElement('a');
+            link.download = 'dithered-' + processedImages[0].name;
+            link.href = processedImages[0].canvas.toDataURL('image/png');
+            link.click();
+        });
+
+        // Download all as ZIP
+        downloadAllBtn.addEventListener('click', async function() {
+            if (processedImages.length === 0) return;
+
+            processingStatus.textContent = 'Creating ZIP...';
+            const zip = new JSZip();
+
+            processedImages.forEach(item => {
+                const dataUrl = item.canvas.toDataURL('image/png');
+                const base64Data = dataUrl.split(',')[1];
+                zip.file('dithered-' + item.name, base64Data, {base64: true});
+            });
+
+            const content = await zip.generateAsync({type: 'blob'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = 'dithered-images.zip';
+            link.click();
+            
+            processingStatus.textContent = '';
+        });
+
+        // Reset/Clear everything
+        resetBtn.addEventListener('click', function() {
+            uploadedImages = [];
+            originalImageDataCache = [];
+            processedImages = [];
+            uploadInput.value = '';
+            
+            // Clear canvases
+            originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
+            ditheredCtx.clearRect(0, 0, ditheredCanvas.width, ditheredCanvas.height);
+            originalCanvas.width = 0;
+            originalCanvas.height = 0;
+            ditheredCanvas.width = 0;
+            ditheredCanvas.height = 0;
+            
+            // Show placeholders, hide canvases
+            document.getElementById('originalPlaceholder').style.display = 'flex';
+            document.getElementById('ditheredPlaceholder').style.display = 'flex';
+            originalCanvas.style.display = 'none';
+            ditheredCanvas.style.display = 'none';
+            
+            // Clear batch results
+            batchGrid.innerHTML = '';
+            batchResults.style.display = 'none';
+            
+            // Disable buttons
+            processBtn.disabled = true;
+            resetBtn.disabled = true;
+            downloadBtn.disabled = true;
+            downloadAllBtn.disabled = true;
+            
+            processingStatus.textContent = '';
+        });
+
+        // Initialize
+        console.log('Initializing palette...');
+        initPalette();
+        updateAlgorithmInfo();
+        customPaletteSection.style.display = 'none';
+        console.log('Initialization complete!');
+        
+        }); // End DOMContentLoaded
+    </script>
+</body>
+</html>
